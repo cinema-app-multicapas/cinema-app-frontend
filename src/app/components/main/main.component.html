@@ -1,0 +1,48 @@
+<div class="main-container">
+    <div class="header-actions">
+      <h1>Directores de Cine</h1>
+      <div class="actions">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Buscar directores</mat-label>
+          <input matInput [(ngModel)]="searchTerm" placeholder="Nombre o nacionalidad...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <button mat-raised-button color="primary" (click)="openDirectorDialog()">
+          <mat-icon>add</mat-icon> Nuevo Director
+        </button>
+      </div>
+    </div>
+  
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  
+    <div *ngIf="!loading && filteredDirectors.length === 0" class="empty-state">
+      <mat-icon>movie_filter</mat-icon>
+      <p>No se encontraron directores. ¡Agrega uno nuevo!</p>
+    </div>
+  
+    <div *ngIf="!loading" class="directors-grid">
+      <mat-card *ngFor="let director of filteredDirectors" class="director-card">
+        <div class="director-image">
+          <img [src]="director.photo_url || 'assets/placeholder-director.png'" alt="{{ director.name }}">
+        </div>
+        <mat-card-content>
+          <h2>{{ director.name }}</h2>
+          <p class="nationality">{{ director.nationality }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="viewDirector(director)">
+            <mat-icon>visibility</mat-icon> Ver detalles
+          </button>
+          <button mat-button color="accent" (click)="openDirectorDialog(director)">
+            <mat-icon>edit</mat-icon> Editar
+          </button>
+          <button mat-button color="warn" (click)="deleteDirector(director)">
+            <mat-icon>delete</mat-icon> Eliminar
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
