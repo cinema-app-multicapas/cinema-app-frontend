@@ -1,9 +1,10 @@
+// main.component.ts
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Director } from '../../models/Director';
-import { DirectorService } from '../../services/director.service';
 import { NotificationService } from '../../services/notificacion.service';
+import { DirectorDialogComponent } from '../new-director/new-director.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // Angular Material imports
@@ -15,7 +16,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { HttpClientModule } from '@angular/common/http';
-
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-main',
@@ -30,7 +31,8 @@ import { HttpClientModule } from '@angular/common/http';
     MatProgressSpinnerModule,
     MatCardModule,
     MatDialogModule,
-    HttpClientModule
+    HttpClientModule,
+    MatSnackBarModule
   ],
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.css']
@@ -41,7 +43,7 @@ export class MainComponent implements OnInit {
   searchTerm = '';
 
   constructor(
-    private notificationService: NotificationService,
+    private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router
   ) {}
@@ -89,16 +91,42 @@ export class MainComponent implements OnInit {
     );
   }
   
-  openDirectorDialog(director?: Director): void {
-    console.log('Abrir diálogo para:', director);
+  openDirectorDialog(): void {
+    const dialogRef = this.dialog.open(DirectorDialogComponent, {
+      width: '500px',
+      disableClose: true
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Añadir el nuevo director a la lista
+        this.directors.push(result);
+        
+        // Mostrar mensaje de confirmación
+        this.snackBar.open(`Director ${result.name} añadido correctamente`, 'Cerrar', {
+          duration: 3000,
+          verticalPosition: 'top'
+        });
+      }
+    });
   }
   
   viewDirector(director: Director): void {
-    console.log('Ver detalles de:', director);
+    this.router.navigate(['/detalles', director.id], { 
+      state: { director: director }
+    });
   }
   
   deleteDirector(director: Director): void {
-    console.log('Eliminar director:', director);
-  }  
-  
+    if (confirm(`¿Estás seguro de que deseas eliminar a ${director.name}?`)) {
+      // Eliminar director de la lista
+      this.directors = this.directors.filter(d => d.id !== director.id);
+      
+      // Mostrar mensaje de confirmación
+      this.snackBar.open(`Director ${director.name} eliminado correctamente`, 'Cerrar', {
+        duration: 3000,
+        verticalPosition: 'top'
+      });
+    }
+  }
 }

@@ -1,0 +1,173 @@
+<h2 mat-dialog-title>
+    {{ director?.name }}
+    <button mat-icon-button color="primary" class="edit-director-button" (click)="editDirector()" *ngIf="!isEditingDirector">
+      <mat-icon>edit</mat-icon>
+    </button>
+  </h2>
+  <mat-dialog-content>
+    <div class="dialog-content-wrapper">
+      <!-- Left column: Director information -->
+      <div class="left-column">
+        <!-- Vista normal del director (cuando no está en modo edición) -->
+        <div *ngIf="!isEditingDirector" class="director-display">
+          <div class="director-image">
+            <img [src]="director?.photo_url" [alt]="director?.name">
+          </div>
+          
+          <div class="details">
+            <div class="detail-item">
+              <span class="label">Nacionalidad:</span>
+              <span>{{ director?.nationality }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="label">Fecha de nacimiento:</span>
+              <span>{{ director?.birth_date | date:'longDate' }}</span>
+            </div>
+            
+            <div class="detail-item biography">
+              <span class="label">Biografía:</span>
+              <p>{{ director?.biography }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Formulario de edición del director -->
+        <div *ngIf="isEditingDirector" class="director-edit-form">
+          <form [formGroup]="directorForm" (ngSubmit)="saveDirector()">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="name">
+              </mat-form-field>
+            </div>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nacionalidad</mat-label>
+                <input matInput formControlName="nationality">
+              </mat-form-field>
+            </div>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Fecha de nacimiento</mat-label>
+                <input matInput [matDatepicker]="birthDatePicker" formControlName="birth_date">
+                <mat-datepicker-toggle matSuffix [for]="birthDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #birthDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>URL de la foto</mat-label>
+                <input matInput formControlName="photo_url">
+              </mat-form-field>
+            </div>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Biografía</mat-label>
+                <textarea matInput formControlName="biography" rows="5"></textarea>
+              </mat-form-field>
+            </div>
+            
+            <div class="form-actions">
+              <button mat-button type="button" (click)="cancelDirectorEdit()">Cancelar</button>
+              <button mat-raised-button color="primary" type="submit" [disabled]="directorForm.invalid">Guardar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Right column: Movies list (sin cambios) -->
+      <div class="right-column">
+        <h3>Películas destacadas</h3>
+        <ul class="movies-list">
+          <li *ngFor="let movie of directorMovies" class="movie-item">
+            <!-- Vista normal (cuando no está en modo edición) -->
+            <div *ngIf="!isEditingMovie || editingMovieId !== movie.id" class="movie-display">
+              <div class="movie-poster" *ngIf="movie.poster_url">
+                <img [src]="movie.poster_url" [alt]="movie.title">
+              </div>
+              <div class="movie-content">
+                <div class="movie-header">
+                  <strong>{{ movie.title }}</strong> 
+                  <span class="movie-year">({{ movie.release_year }})</span>
+                </div>
+                <div class="movie-meta">
+                  <span class="genre">{{ movie.genre }}</span>
+                  <span class="duration">{{ movie.duration }} min</span>
+                </div>
+                <p class="synopsis">{{ movie.synopsis }}</p>
+                
+                <!-- Botones de acción -->
+                <div class="movie-actions">
+                  <button mat-icon-button color="primary" (click)="editMovie(movie)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteMovie(movie)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Formulario de edición (cuando está en modo edición) -->
+            <div *ngIf="isEditingMovie && editingMovieId === movie.id" class="movie-edit-form">
+              <form [formGroup]="movieForm" (ngSubmit)="saveMovie()">
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Título</mat-label>
+                    <input matInput formControlName="title">
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row form-inline">
+                  <mat-form-field appearance="outline" class="year-field">
+                    <mat-label>Año</mat-label>
+                    <input matInput type="number" formControlName="release_year">
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="duration-field">
+                    <mat-label>Duración (min)</mat-label>
+                    <input matInput type="number" formControlName="duration">
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Género</mat-label>
+                    <input matInput formControlName="genre">
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>URL del Póster</mat-label>
+                    <input matInput formControlName="poster_url">
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Sinopsis</mat-label>
+                    <textarea matInput formControlName="synopsis" rows="4"></textarea>
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-actions">
+                  <button mat-button type="button" (click)="cancelEdit()">Cancelar</button>
+                  <button mat-raised-button color="primary" type="submit" [disabled]="movieForm.invalid">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="goBack()">
+      <mat-icon>close</mat-icon> Cerrar
+    </button>
+  </mat-dialog-actions>
