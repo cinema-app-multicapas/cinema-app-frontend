@@ -3,16 +3,20 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Director } from '../../models/Director';
 import { Movie } from '../../models/Movie'; 
+import { DirectorService } from '../../services/director.service';
+import { MovieService } from '../../services/movie.service';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpClientModule } from '@angular/common/http';
+import { NewMovieComponent } from '../new-movie/new-movie.component';
 
 @Component({
   selector: 'app-director-detail-dialogs',
@@ -27,7 +31,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatDatepickerModule,
     MatNativeDateModule,
     ReactiveFormsModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    HttpClientModule
   ],
   templateUrl: './director-detail-dialogs.component.html',
   styleUrl: './director-detail-dialogs.component.css'
@@ -45,103 +50,26 @@ export class DirectorDetailDialogsComponent implements OnInit {
   isEditingDirector: boolean = false;
   directorForm: FormGroup;
   
-  private directorsData: Director[] = [
-    {
-      id: 1,
-      name: 'Christopher Nolan',
-      birth_date: new Date('1970-07-30'),
-      nationality: 'Británico',
-      biography: 'Christopher Nolan es un director y guionista británico-estadounidense conocido por sus narrativas no lineales y sus películas de ciencia ficción. Ha dirigido éxitos de taquilla como "Inception", "Interstellar" y la trilogía de Batman que comenzó con "Batman Begins". Su estilo cinematográfico se caracteriza por estructuras narrativas complejas y efectos prácticos en lugar de CGI.',
-      photo_url: 'https://es.web.img3.acsta.net/pictures/14/10/30/10/59/215487.jpg'
-    },
-    {
-      id: 2,
-      name: 'Greta Gerwig',
-      birth_date: new Date('1983-08-04'),
-      nationality: 'Estadounidense',
-      biography: 'Greta Gerwig es una directora, guionista y actriz estadounidense. Comenzó su carrera en el cine independiente y se ha convertido en una de las directoras más aclamadas de su generación. Ha dirigido películas como "Lady Bird", "Little Women" y "Barbie", recibiendo múltiples nominaciones a los premios Oscar por su trabajo como directora y guionista.',
-      photo_url: 'https://i.guim.co.uk/img/media/0abe4d18f6b8f692ab092ba1b26b165b860db247/0_0_5000_3000/master/5000.jpg?width=1020&dpr=1&s=none'
-    },
-    {
-      id: 3,
-      name: 'Bong Joon-ho',
-      birth_date: new Date('1969-09-14'),
-      nationality: 'Surcoreano',
-      biography: 'Bong Joon-ho es un director y guionista surcoreano, conocido por mezclar géneros y abordar temas sociales en sus películas. Alcanzó reconocimiento internacional con "Parasite", que se convirtió en la primera película no inglesa en ganar el Oscar a Mejor Película. Entre sus obras también destacan "Snowpiercer", "Okja" y "Memories of Murder".',
-      photo_url: 'https://images.mubicdn.net/images/cast_member/4836/cache-617588-1607417988/image-w856.jpg'
-    }
-  ];
-  
-  private allMovies: Movie[] = [
-    {
-      id: 1,
-      title: 'Inception',
-      release_year: 2010,
-      genre: 'Ciencia ficción',
-      duration: 148,
-      synopsis: 'Un ladrón que roba secretos del subconsciente durante el estado de sueño es contratado para realizar la tarea inversa: implantar una idea en la mente de un CEO.',
-      director_id: 1,
-      poster_url: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg'
-    },
-    {
-      id: 2,
-      title: 'Interstellar',
-      release_year: 2014,
-      genre: 'Drama',
-      duration: 169,
-      synopsis: 'Exploradores viajan más allá de nuestra galaxia para descubrir si la humanidad tiene un futuro entre las estrellas.',
-      director_id: 1,
-      poster_url: 'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg'
-    },
-    {
-      id: 3,
-      title: 'The Dark Knight',
-      release_year: 2008,
-      genre: 'Acción',
-      duration: 152,
-      synopsis: 'Batman se enfrenta al Joker en una lucha por Gotham que pone a prueba los límites del héroe y lo lleva a enfrentar dilemas morales.',
-      director_id: 1,
-      poster_url: 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg'
-    },
-    {
-      id: 4,
-      title: 'Lady Bird',
-      release_year: 2017,
-      genre: 'Drama',
-      duration: 94,
-      synopsis: 'Una adolescente se enfrenta a su último año escolar mientras navega relaciones complicadas con su madre y amigos.',
-      director_id: 2,
-      poster_url: 'https://m.media-amazon.com/images/M/MV5BODhkZGE0NDQtZDc0Zi00YmQ4LWJiNmUtYTY1OGM1ODRmNGVkXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg'
-    },
-    {
-      id: 5,
-      title: 'Parasite',
-      release_year: 2019,
-      genre: 'Drama',
-      duration: 132,
-      synopsis: 'Una familia coreana de bajos recursos se infiltra en la vida de una adinerada familia, con consecuencias inesperadas para ambas.',
-      director_id: 3,
-      poster_url: 'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg'
-    }
-  ];
-  
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private location: Location,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog,
+    private directorService: DirectorService,
+    private movieService: MovieService
   ) {
     // Inicializar el formulario de película con valores por defecto
     this.movieForm = this.fb.group({
       id: [null],
       title: ['', Validators.required],
-      release_year: [null, [Validators.required, Validators.min(1900), Validators.max(2100)]],
+      releaseYear: [null, [Validators.required, Validators.min(1900), Validators.max(2100)]],
       genre: ['', Validators.required],
       duration: [null, [Validators.required, Validators.min(1)]],
       synopsis: ['', Validators.required],
-      poster_url: [''],
-      director_id: [null]
+      posterUrl: [''],
+      directorId: [null]
     });
     
     // Inicializar el formulario de director con valores por defecto
@@ -149,47 +77,54 @@ export class DirectorDetailDialogsComponent implements OnInit {
       id: [null],
       name: ['', Validators.required],
       nationality: ['', Validators.required],
-      birth_date: [null, Validators.required],
+      birthDate: [null, Validators.required],
       biography: ['', Validators.required],
-      photo_url: ['']
+      photoUrl: ['']
     });
-    
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras.state) {
-      const state = navigation.extras.state as { director: Director };
-      if (state.director) {
-        this.director = state.director;
-        this.loadMoviesForDirector();
-      }
-    }
   }
   
   ngOnInit(): void {
-    if (!this.director) {
-      this.route.params.subscribe(params => {
-        const id = params['id'];
-        if (id) {
-          this.loadDirectorById(Number(id));
-        } else {
-          this.goBack();
-        }
-      });
-    }
+    this.route.params.subscribe(params => {
+      const id = params['id'];
+      if (id) {
+        this.loadDirectorById(Number(id));
+      } else {
+        this.goBack();
+      }
+    });
   }
   
   loadDirectorById(id: number): void {
-    this.director = this.directorsData.find(d => d.id === id);
-    
-    if (this.director) {
-      this.loadMoviesForDirector();
-    } else {
-      this.goBack();
-    }
+    this.directorService.getDirector(id).subscribe({
+      next: (director) => {
+        this.director = director;
+        this.loadMoviesForDirector();
+      },
+      error: (error) => {
+        console.error('Error al cargar director:', error);
+        this.snackBar.open('Error al cargar datos del director', 'Cerrar', {
+          duration: 3000,
+          verticalPosition: 'top'
+        });
+        this.goBack();
+      }
+    });
   }
   
   loadMoviesForDirector(): void {
-    if (this.director) {
-      this.directorMovies = this.allMovies.filter(m => m.director_id === this.director?.id);
+    if (this.director && this.director.id) {
+      this.movieService.getMoviesByDirector(this.director.id).subscribe({
+        next: (movies) => {
+          this.directorMovies = movies;
+        },
+        error: (error) => {
+          console.error('Error al cargar películas:', error);
+          this.snackBar.open('Error al cargar películas del director', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        }
+      });
     }
   }
   
@@ -207,12 +142,12 @@ export class DirectorDetailDialogsComponent implements OnInit {
     this.movieForm.patchValue({
       id: movie.id,
       title: movie.title,
-      release_year: movie.release_year,
+      releaseYear: movie.releaseYear,
       genre: movie.genre,
       duration: movie.duration,
       synopsis: movie.synopsis,
-      poster_url: movie.poster_url,
-      director_id: movie.director_id
+      posterUrl: movie.posterUrl,
+      directorId: movie.directorId
     });
   }
   
@@ -223,25 +158,30 @@ export class DirectorDetailDialogsComponent implements OnInit {
   }
   
   saveMovie(): void {
-    if (this.movieForm.valid) {
+    if (this.movieForm.valid && this.editingMovieId) {
       const updatedMovie: Movie = this.movieForm.value;
       
-      // Encontrar y actualizar la película en la lista
-      const index = this.allMovies.findIndex(m => m.id === updatedMovie.id);
-      
-      if (index !== -1) {
-        this.allMovies[index] = updatedMovie;
-        this.loadMoviesForDirector(); // Recargar la lista
-        
-        // Mostrar confirmación
-        this.snackBar.open('Película actualizada correctamente', 'Cerrar', {
-          duration: 3000,
-          verticalPosition: 'top'
-        });
-        
-        // Salir del modo de edición
-        this.cancelEdit();
-      }
+      this.movieService.updateMovie(this.editingMovieId, updatedMovie).subscribe({
+        next: () => {
+          this.loadMoviesForDirector(); // Recargar la lista
+          
+          // Mostrar confirmación
+          this.snackBar.open('Película actualizada correctamente', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+          
+          // Salir del modo de edición
+          this.cancelEdit();
+        },
+        error: (error) => {
+          console.error('Error al actualizar película:', error);
+          this.snackBar.open('Error al actualizar película', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        }
+      });
     }
   }
   
@@ -260,9 +200,9 @@ export class DirectorDetailDialogsComponent implements OnInit {
         id: this.director.id,
         name: this.director.name,
         nationality: this.director.nationality,
-        birth_date: this.director.birth_date,
+        birthDate: this.director.birthDate,
         biography: this.director.biography,
-        photo_url: this.director.photo_url
+        photoUrl: this.director.photoUrl
       });
     }
   }
@@ -273,51 +213,83 @@ export class DirectorDetailDialogsComponent implements OnInit {
   }
   
   saveDirector(): void {
-    if (this.directorForm.valid) {
+    if (this.directorForm.valid && this.director && this.director.id) {
       const updatedDirector: Director = this.directorForm.value;
       
-      // Encontrar y actualizar el director en la lista
-      const index = this.directorsData.findIndex(d => d.id === updatedDirector.id);
-      
-      if (index !== -1) {
-        this.directorsData[index] = updatedDirector;
-        this.director = updatedDirector; // Actualizar el director actual
-        
-        // Mostrar confirmación
-        this.snackBar.open('Director actualizado correctamente', 'Cerrar', {
-          duration: 3000,
-          verticalPosition: 'top'
-        });
-        
-        // Salir del modo de edición
-        this.cancelDirectorEdit();
-      }
+      this.directorService.updateDirector(this.director.id, updatedDirector).subscribe({
+        next: (director) => {
+          this.director = director; // Actualizar el director actual
+          
+          // Mostrar confirmación
+          this.snackBar.open('Director actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+          
+          // Salir del modo de edición
+          this.cancelDirectorEdit();
+        },
+        error: (error) => {
+          console.error('Error al actualizar director:', error);
+          this.snackBar.open('Error al actualizar director', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        }
+      });
     }
   }
-
+  
   deleteMovie(movie: Movie): void {
     // Confirm delete
     if (confirm(`¿Estás seguro que deseas eliminar la película "${movie.title}"?`)) {
-      // Find movie index in the allMovies array
-      const index = this.allMovies.findIndex(m => m.id === movie.id);
-      
-      if (index !== -1) {
-        // Remove the movie from the array
-        this.allMovies.splice(index, 1);
-        
-        // Refresh the director's movies
-        this.loadMoviesForDirector();
-        
-        // Show confirmation message
-        this.snackBar.open('Película eliminada correctamente', 'Cerrar', {
-          duration: 3000,
-          verticalPosition: 'top'
-        });
-      }
+      this.movieService.deleteMovie(movie.id!).subscribe({
+        next: () => {
+          // Refresh the director's movies
+          this.loadMoviesForDirector();
+          
+          // Show confirmation message
+          this.snackBar.open('Película eliminada correctamente', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        },
+        error: (error) => {
+          console.error('Error al eliminar película:', error);
+          this.snackBar.open('Error al eliminar película', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        }
+      });
     }
   }
   
   goBack(): void {
     this.location.back();
   }
+
+  openNewMovieDialog(): void {
+    const dialogRef = this.dialog.open(NewMovieComponent, {
+      width: '500px',
+      disableClose: true,
+      data: {
+        directorId: this.director?.id
+      }
+    });
+      
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Añadir el nuevo director a la lista
+        this.directorMovies.push(result);
+          
+        // Mostrar mensaje de confirmación
+        this.snackBar.open(`Director ${result.name} añadido correctamente`, 'Cerrar', {
+          duration: 3000,
+          verticalPosition: 'top'
+        });        
+      }
+    });
+  }
+
 }

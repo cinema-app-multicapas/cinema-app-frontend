@@ -7,7 +7,7 @@ import { Movie } from '../models/Movie';
   providedIn: 'root'
 })
 export class MovieService {
-  private apiUrl = 'http://localhost:3000/api/movies';
+  private apiUrl = 'http://localhost:8082/api/movies'; 
 
   constructor(private http: HttpClient) {}
 
@@ -19,12 +19,16 @@ export class MovieService {
     return this.http.get<Movie>(`${this.apiUrl}/${id}`);
   }
 
+  getMoviesByDirector(directorId: number): Observable<Movie[]> {
+    return this.http.get<Movie[]>(`${this.apiUrl}?directorId=${directorId}`);
+  }
+
   addMovie(movie: Movie): Observable<Movie> {
     return this.http.post<Movie>(this.apiUrl, movie);
   }
 
-  updateMovie(movie: Movie): Observable<Movie> {
-    return this.http.put<Movie>(`${this.apiUrl}/${movie.id}`, movie);
+  updateMovie(id: number, movie: Movie): Observable<Movie> {
+    return this.http.put<Movie>(`${this.apiUrl}/${id}`, movie);
   }
 
   deleteMovie(id: number): Observable<any> {

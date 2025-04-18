@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Director } from '../../models/Director';
 import { NotificationService } from '../../services/notificacion.service';
-import { DirectorDialogComponent } from '../new-director/new-director.component';
+import { NewDirectorComponent } from '../new-director/new-director.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // Angular Material imports
@@ -17,6 +17,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { HttpClientModule } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DirectorService } from '../../services/director.service';
 
 @Component({
   selector: 'app-main',
@@ -41,46 +42,34 @@ export class MainComponent implements OnInit {
   directors: Director[] = [];
   loading = true;
   searchTerm = '';
-
+  
   constructor(
+    private directorService: DirectorService, // Inyecta el servicio
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router
   ) {}
-
+  
   ngOnInit(): void {
     this.loadDirectors();
   }
-
+  
   loadDirectors(): void {
-    // 🔥 Datos quemados de ejemplo
-    this.directors = [
-      {
-        id: 1,
-        name: 'Christopher Nolan',
-        birth_date: new Date('1970-07-30'),
-        nationality: 'Británico',
-        biography: 'Director de películas como Inception, Interstellar y The Dark Knight.',
-        photo_url: 'https://es.web.img3.acsta.net/pictures/14/10/30/10/59/215487.jpg'
+    this.loading = true;
+    this.directorService.getDirectors().subscribe({
+      next: (data) => {
+        this.directors = data;
+        this.loading = false;
       },
-      {
-        id: 2,
-        name: 'Greta Gerwig',
-        birth_date: new Date('1983-08-04'),
-        nationality: 'Estadounidense',
-        biography: 'Directora de Lady Bird, Little Women y Barbie.',
-        photo_url: 'https://i.guim.co.uk/img/media/0abe4d18f6b8f692ab092ba1b26b165b860db247/0_0_5000_3000/master/5000.jpg?width=1020&dpr=1&s=none&crop=none'
-      },
-      {
-        id: 3,
-        name: 'Bong Joon-ho',
-        birth_date: new Date('1969-09-14'),
-        nationality: 'Surcoreano',
-        biography: 'Director de Parasite, Snowpiercer y The Host.',
-        photo_url: 'https://images.mubicdn.net/images/cast_member/4836/cache-617588-1607417988/image-w856.jpg'
+      error: (error) => {
+        console.error('Error al cargar directores:', error);
+        this.snackBar.open('Error al cargar directores', 'Cerrar', {
+          duration: 3000,
+          verticalPosition: 'top'
+        });
+        this.loading = false;
       }
-    ];
-    this.loading = false;
+    });
   }
 
   get filteredDirectors(): Director[] {
@@ -92,7 +81,7 @@ export class MainComponent implements OnInit {
   }
   
   openDirectorDialog(): void {
-    const dialogRef = this.dialog.open(DirectorDialogComponent, {
+    const dialogRef = this.dialog.open(NewDirectorComponent, {
       width: '500px',
       disableClose: true
     });
@@ -119,13 +108,21 @@ export class MainComponent implements OnInit {
   
   deleteDirector(director: Director): void {
     if (confirm(`¿Estás seguro de que deseas eliminar a ${director.name}?`)) {
-      // Eliminar director de la lista
-      this.directors = this.directors.filter(d => d.id !== director.id);
-      
-      // Mostrar mensaje de confirmación
-      this.snackBar.open(`Director ${director.name} eliminado correctamente`, 'Cerrar', {
-        duration: 3000,
-        verticalPosition: 'top'
+      this.directorService.deleteDirector(director.id!).subscribe({
+        next: () => {
+          this.directors = this.directors.filter(d => d.id !== director.id);
+          this.snackBar.open(`Director ${director.name} eliminado correctamente`, 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        },
+        error: (error) => {
+          console.error('Error al eliminar director:', error);
+          this.snackBar.open('Error al eliminar director', 'Cerrar', {
+            duration: 3000,
+            verticalPosition: 'top'
+          });
+        }
       });
     }
   }

@@ -7,7 +7,7 @@ import { Director } from '../models/Director';
   providedIn: 'root'
 })
 export class DirectorService {
-  private apiUrl = 'http://localhost:3000/api/directors';
+  private apiUrl = 'http://localhost:8082/api/directors'; 
 
   constructor(private http: HttpClient) {}
 
@@ -23,8 +23,8 @@ export class DirectorService {
     return this.http.post<Director>(this.apiUrl, director);
   }
 
-  updateDirector(director: Director): Observable<Director> {
-    return this.http.put<Director>(`${this.apiUrl}/${director.id}`, director);
+  updateDirector(id: number, director: Director): Observable<Director> {
+    return this.http.put<Director>(`${this.apiUrl}/${id}`, director);
   }
 
   deleteDirector(id: number): Observable<any> {

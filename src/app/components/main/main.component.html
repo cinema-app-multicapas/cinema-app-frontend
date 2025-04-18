@@ -26,7 +26,7 @@
     <div *ngIf="!loading" class="directors-grid">
       <mat-card *ngFor="let director of filteredDirectors" class="director-card">
         <div class="director-image">
-          <img [src]="director.photo_url || 'assets/placeholder-director.png'" alt="{{ director.name }}">
+          <img [src]="director.photoUrl || 'assets/placeholder-director.png'" alt="{{ director.name }}">
         </div>
         <mat-card-content>
           <h2>{{ director.name }}</h2>

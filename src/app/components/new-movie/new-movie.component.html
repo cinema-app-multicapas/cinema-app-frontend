@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Nueva Película</h2>
+<mat-dialog-content>
+  <form [formGroup]="movieForm" class="movie-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Título</mat-label>
+      <input matInput formControlName="title" placeholder="Nombre de la película">
+      <mat-error *ngIf="movieForm.get('title')?.hasError('required')">El título es obligatorio</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Año de estreno</mat-label>
+      <input matInput type="number" formControlName="releaseYear">
+      <mat-error *ngIf="movieForm.get('releaseYear')?.hasError('required')">El año es obligatorio</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Género</mat-label>
+      <input matInput formControlName="genre" placeholder="Ej. Drama, Comedia...">
+      <mat-error *ngIf="movieForm.get('genre')?.hasError('required')">El género es obligatorio</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Sinopsis</mat-label>
+      <textarea matInput formControlName="synopsis" rows="4" placeholder="Resumen de la trama..."></textarea>
+      <mat-error *ngIf="movieForm.get('synopsis')?.hasError('required')">La sinopsis es obligatoria</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Duración (min)</mat-label>
+      <input matInput type="number" formControlName="duration">
+      <mat-error *ngIf="movieForm.get('duration')?.hasError('required')">La duración es obligatoria</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>URL del póster</mat-label>
+      <input matInput formControlName="posterUrl" placeholder="https://...">
+      <mat-hint>Deja en blanco para usar una imagen por defecto</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="movieForm.invalid">Guardar</button>
+</mat-dialog-actions>

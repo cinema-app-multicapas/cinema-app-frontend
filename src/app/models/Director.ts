@@ -1,8 +1,8 @@
 export interface Director {
-  id: number;
+  id?: number;
   name: string;
-  birth_date: Date;
+  birthDate: Date; 
   nationality: string;
   biography: string;
-  photo_url?: string;
+  photoUrl: string; 
 }
